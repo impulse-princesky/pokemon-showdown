@@ -85,7 +85,7 @@ async function cleanupOldSeen(daysOld: number = 365): Promise<number> {
 	return SeenDB.deleteMany({ lastSeen: { $lt: cutoffDate } });
 }
 
-export const commands: Chat.ChatCommands = {
+export const commands: ChatCommands = {
 	async seen(target, room, user) {
 		if (!this.runBroadcast()) return;
 		if (!target) return this.parse('/help seen');
