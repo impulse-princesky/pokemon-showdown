@@ -1,4 +1,3 @@
-// impulse/misc/seen.ts
 /**
  * Pokemon Showdown - Seen System
  * Tracks when users were last online using MongoDB
