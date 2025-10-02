@@ -70,6 +70,8 @@ try {
 }
 
 import { FS, Repl } from '../lib';
+// Import MongoDB For Initialisation
+import MongoDBSubprocess from '../impulse/mongodb_subprocess';
 
 /*********************************************************
  * Set up most of our globals
@@ -101,6 +103,10 @@ function setupGlobals() {
 			}
 		});
 	}
+
+	/* Make Impulse Namespace Global */
+
+	global.Impulse = {};
 
 	const { Dex } = require('../sim/dex');
 	global.Dex = Dex;
@@ -141,6 +147,71 @@ function setupGlobals() {
 }
 setupGlobals();
 
+/**************************
+* Initialise MongoDB.     *
+**************************/
+async function initializeMongoDB() {
+	if (!Config.mongodb) {
+		Monitor.notice('MongoDB not configured - skipping initialization');
+		return;
+	}
+
+	try {
+		// Start subprocess if configured
+		if (Config.mongodb.subprocess?.enabled) {
+			Monitor.notice('Starting local MongoDB subprocess...');
+			mongoSubprocess = new MongoDBSubprocess(Config.mongodb.subprocess);
+			
+			try {
+				await mongoSubprocess.start();
+				const port = Config.mongodb.subprocess.port || 27017;
+				Monitor.notice(`MongoDB subprocess started successfully on port ${port}`);
+				
+				// Override URI to use subprocess
+				Config.mongodb.uri = mongoSubprocess.getConnectionUri();
+				Monitor.debug(`Using MongoDB URI: ${Config.mongodb.uri}`);
+			} catch (subprocessError: any) {
+				Monitor.error('Failed to start MongoDB subprocess: ' + subprocessError.message);
+				
+				// If it's a port conflict, give helpful message
+				if (subprocessError.message.includes('already in use')) {
+					Monitor.warn('Port is already in use. Either:');
+					Monitor.warn('  1. Stop the existing MongoDB instance, or');
+					Monitor.warn('  2. Change the port in your config, or');
+					Monitor.warn('  3. Disable subprocess and connect to existing instance');
+				}
+				
+				throw subprocessError;
+			}
+		}
+
+		Monitor.notice('Connecting to MongoDB...');
+		await MongoDB.connect(Config.mongodb);
+		Monitor.notice(`MongoDB connected successfully to database: ${Config.mongodb.database}`);
+		
+	} catch (error: any) {
+		Monitor.error('Failed to initialize MongoDB: ' + error.message);
+		Monitor.warn('Server will continue without MongoDB support');
+		
+		// Clean up subprocess if it was started
+		if (mongoSubprocess) {
+			try {
+				await mongoSubprocess.stop();
+			} catch (cleanupError) {
+				Monitor.error('Error cleaning up subprocess: ' + cleanupError);
+			}
+			mongoSubprocess = null;
+		}
+	}
+}
+
+// Initialize MongoDB immediately
+void initializeMongoDB();
+
+/**************************
+* Initialise MongoDB Ends *
+**************************/
+
 if (Config.crashguard) {
 	// graceful crash - allow current battles to finish before restarting
 	process.on('uncaughtException', (err: Error) => {
@@ -151,6 +222,45 @@ if (Config.crashguard) {
 		Monitor.crashlog(err as any, 'A main process Promise');
 	});
 }
+
+/**************************
+* Shutdown MongoDB Gracefully  *
+**************************/
+
+async function gracefulShutdown(signal: string) {
+	Monitor.notice(`Received ${signal}, shutting down gracefully...`);
+	
+	// Close MongoDB connection
+	try {
+		if (MongoDB.isConnected()) {
+			Monitor.notice('Closing MongoDB connection...');
+			await MongoDB.disconnect();
+			Monitor.notice('MongoDB connection closed');
+		}
+	} catch (error: any) {
+		Monitor.error('Error closing MongoDB connection: ' + error.message);
+	}
+
+	// Stop subprocess if running
+	if (mongoSubprocess) {
+		try {
+			Monitor.notice('Stopping MongoDB subprocess...');
+			await mongoSubprocess.stop();
+			Monitor.notice('MongoDB subprocess stopped');
+		} catch (error: any) {
+			Monitor.error('Error stopping MongoDB subprocess: ' + error.message);
+		}
+	}
+	
+	process.exit(0);
+}
+
+process.on('SIGINT', () => void gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => void gracefulShutdown('SIGTERM'));
+
+/**************************
+* Shutdown MongoDB Gracefully  *
+**************************/
 
 /*********************************************************
  * Start networking processes to be connected to
