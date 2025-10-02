@@ -45,6 +45,7 @@ exports.mongodb = {
 	maxIdleTimeMS: 30000,
 	waitQueueTimeoutMS: 10000,
 	serverSelectionTimeoutMS: 10000,
+	nodbwriting: false,
 };
 
 /**
