@@ -405,26 +405,28 @@ export const commands: ChatCommands = {
       this.parse(randomEmote);
     },
 
-    emoticonshelp(target, room, user) {
-      if (!this.runBroadcast()) return;
-      let buf = ``;
-      buf += `<div><b><center>Emoticon Commands</center></b><br>`;
-      buf += `<ul>`;
-      buf += `<li><code>/emoticon</code> may be substituted with <code>/emoticons</code>, <code>/emotes</code>, or <code>/emote</code></li><br>`;
-      buf += `<li><code>/emoticon add [name], [url]</code> - Adds an emoticon. (Requires: @ and higher)</li><br>`;
-      buf += `<li><code>/emoticon del/delete/remove/rem [name]</code> - Removes an emoticon. (Requires: @ and higher)</li><br>`;
-      buf += `<li><code>/emoticon toggle</code> - Enables or disables emoticons in the current room depending on if they are already active. (Requires: # and higher)</li><br>`;
-      buf += `<li><code>/emoticon view/list</code> - Displays the list of emoticons.</li><br>`;
-      buf += `<li><code>/emoticon ignore</code> - Ignores emoticons in chat messages.</li><br>`;
-      buf += `<li><code>/emoticon unignore</code> - Unignores emoticons in chat messages.</li><br>`;
-      buf += `<li><code>/emoticon size [size]</code> - Sets the size of emoticons (16-256px). (Requires: @ and higher)</li><br>`;
-      buf += `<li><code>/emoticon search [query]</code> - Search for emoticons by name.</li><br>`;
-      buf += `<li><code>/emoticon info [name]</code> - View detailed information about an emoticon.</li><br>`;
-      buf += `<li><code>/emoticon count</code> - Shows total number of emoticons.</li><br>`;
-      buf += `<li><code>/randemote</code> - Randomly sends an emote from the emoticon list.</li><br>`;
-      buf += `<li><code>/emoticon help</code> - Displays this help command.</li>`;
-      buf += `</ul></div>`;
-      this.sendReplyBox(buf);
-    },
+	  help(target, room, user) {
+		  if (!this.runBroadcast()) return;
+		  this.sendReplyBox(
+			  `<div><b><center>Emoticon Commands</center></b><br>` +
+			  `<ul>` +
+			  `<li><code>/emoticon</code> may be substituted with <code>/emoticons</code>, <code>/emotes</code>, or <code>/emote</code></li>` +
+			  `<li><code>/emoticon add [name], [url]</code> - Adds an emoticon</li>` +
+			  `<li><code>/emoticon del/delete/remove/rem [name]</code> - Removes an emoticon</li>` +
+			  `<li><code>/emoticon toggle</code> - Enables or disables emoticons in the current room depending on if they are already active</li>` +
+			  `<li><code>/emoticon view/list</code> - Displays the list of emoticons</li>` +
+			  `<li><code>/emoticon ignore</code> - Ignores emoticons in chat messages</li>` +
+			  `<li><code>/emoticon unignore</code> - Unignores emoticons in chat messages</li>` +
+			  `<li><code>/emoticon size [size]</code> - Sets the size of emoticons (16-256px)</li>` +
+			  `<li><code>/emoticon search [query]</code> - Search for emoticons by name</li>` +
+			  `<li><code>/emoticon info [name]</code> - View detailed information about an emoticon</li>` +
+			  `<li><code>/emoticon count</code> - Shows total number of emoticons</li>` +
+			  `<li><code>/randemote</code> - Randomly sends an emote from the emoticon list</li>` +
+			  `<li><code>/emoticon help</code> - Displays this help command</li>` +
+			  `</ul>` +
+			  `<small>Commands add, del, toggle, and size require appropriate permissions (@ for add/del/size, # for toggle).</small>` +
+			  `</div>`
+		  );
+	  },
   },
 };
