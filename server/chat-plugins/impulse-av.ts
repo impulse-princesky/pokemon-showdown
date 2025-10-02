@@ -113,6 +113,7 @@ export const commands: Chat.ChatCommands = {
         console.error('Error deleting avatar:', err);
       }
     },
+  },
   
     customavatarhelp(target, room, user) {
       if (!this.runBroadcast()) return;
@@ -124,5 +125,4 @@ export const commands: Chat.ChatCommands = {
         `</ul>`
       );
     },
-  },
 };
