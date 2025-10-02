@@ -10,7 +10,7 @@
  * @license MIT
  */
 
-import { MongoDB } from '../mongodb_module';
+import { MongoDB } from '../../impulse/mongodb_module';
 
 interface SeenDocument {
 	_id?: any;
